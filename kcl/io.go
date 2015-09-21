@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 )
@@ -49,7 +48,7 @@ func (ih *ioHandler) receiveMessage() (*message, error) {
 		return nil, err
 	}
 
-	logger.Log(fmt.Sprintf("incoming message: %s", buf))
+	logger.Printf("incoming message: %s", buf)
 
 	var msg message
 	if err := json.Unmarshal(buf, &msg); err != nil {

@@ -29,11 +29,8 @@ func (p *testProcessor) Shutdown(reason string, cp *CheckPointer) error {
 type ginkgoLogger struct {
 }
 
-func (l *ginkgoLogger) Init() {
-}
-
-func (l *ginkgoLogger) Log(msg string) {
-	GinkgoWriter.Write([]byte(msg))
+func (l *ginkgoLogger) Printf(format string, v ...interface{}) {
+	GinkgoWriter.Write([]byte(fmt.Sprintf(format, v...)))
 	GinkgoWriter.Write([]byte{0xa}) //new line
 }
 
