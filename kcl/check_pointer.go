@@ -5,37 +5,37 @@ import (
 	"fmt"
 )
 
-type checkPointResponse struct {
-	Action     string `json:"action"`
-	CheckPoint string `json:"checkpoint"`
-}
-
 type CheckPointer struct {
+	ih                *ioHandler
 	checkPointAllowed bool
 }
 
 func (cp *CheckPointer) CheckPointAll() error {
-	return cp.doCheckPoint(&checkPointResponse{})
+	return cp.doCheckPoint("")
 }
 
 func (cp *CheckPointer) CheckPointSeq(seq string) error {
-	return cp.doCheckPoint(&checkPointResponse{CheckPoint: seq})
+	return cp.doCheckPoint(seq)
 }
 
-func (cp *CheckPointer) doCheckPoint(resp *checkPointResponse) error {
+func (cp *CheckPointer) doCheckPoint(seq string) error {
 	if !cp.checkPointAllowed {
 		return errors.New("checkpoint is not allowed")
 	}
 
-	message, err := getMessage()
+	if err := cp.ih.sendCheckpoint(seq); err != nil {
+		return err
+	}
+
+	msg, err := cp.ih.receiveMessage()
 	if err != nil {
 		return err
 	}
 
-	if message.Action != "checkpoint" {
-		return fmt.Errorf("invalid action: %s", message.Action)
-	} else if message.Error != nil {
-
+	if msg.Action != "checkpoint" {
+		return fmt.Errorf("invalid action: %s", msg.Action)
+	} else if msg.Error != nil {
+		return errors.New(*msg.Error)
 	}
 
 	return nil
