@@ -4,7 +4,7 @@ import "fmt"
 
 type message struct {
 	Action     string    `json:"action"`
-	ShardID    *string   `json:"shard_id,omitempty"`
+	ShardID    *string   `json:"shardId,omitempty"`
 	Records    []*Record `json:"records,omitempty"`
 	Checkpoint *string   `json:"checkpoint,omitempty"`
 	Error      *string   `json:"error,omitempty"`

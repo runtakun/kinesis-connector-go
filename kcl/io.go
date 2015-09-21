@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 )
 
@@ -17,28 +18,29 @@ func NewCLIHandler() *ioHandler {
 	return &ioHandler{bufio.NewScanner(os.Stdin), bufio.NewWriter(os.Stdout), bufio.NewWriter(os.Stderr)}
 }
 
-func NewIOHandler(stdin *os.File, stdout *os.File, stderr *os.File) *ioHandler {
+func NewIOHandler(stdin io.Reader, stdout io.Writer, stderr io.Writer) *ioHandler {
 	return &ioHandler{bufio.NewScanner(stdin), bufio.NewWriter(stdout), bufio.NewWriter(stderr)}
 }
 
 type response struct {
 	Action     string `json:"action"`
-	For        string `json:"responseFor,omitifempty"`
-	CheckPoint string `json:"checkpoint,omitifempty"`
+	For        string `json:"responseFor,omitempty"`
+	CheckPoint string `json:"checkpoint,omitempty"`
 }
 
 func (ih *ioHandler) sendStatus(action string) error {
-	resp := &response{Action: "status", For: action}
+	resp := response{Action: "status", For: action}
 	return ih.sendResponse(resp)
 }
 
 func (ih *ioHandler) sendCheckpoint(seq string) error {
-	resp := &response{Action: "checkpoint", CheckPoint: seq}
+	resp := response{Action: "checkpoint", CheckPoint: seq}
 	return ih.sendResponse(resp)
 }
 
-func (ih *ioHandler) sendResponse(resp *response) error {
-	return json.NewEncoder(ih.Out).Encode(resp)
+func (ih *ioHandler) sendResponse(resp response) error {
+	defer ih.Out.Flush()
+	return json.NewEncoder(ih.Out).Encode(&resp)
 }
 
 func (ih *ioHandler) receiveMessage() (*message, error) {
@@ -47,12 +49,12 @@ func (ih *ioHandler) receiveMessage() (*message, error) {
 		return nil, err
 	}
 
-	var msg *message
-	if err := json.Unmarshal(buf, msg); err != nil {
+	var msg message
+	if err := json.Unmarshal(buf, &msg); err != nil {
 		return nil, err
 	}
 
-	return msg, nil
+	return &msg, nil
 }
 
 func (ih *ioHandler) readLine() ([]byte, error) {
