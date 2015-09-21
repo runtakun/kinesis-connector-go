@@ -14,11 +14,11 @@ type ioHandler struct {
 	Err *bufio.Writer
 }
 
-func NewCLIHandler() *ioHandler {
+func newCLIHandler() *ioHandler {
 	return &ioHandler{bufio.NewScanner(os.Stdin), bufio.NewWriter(os.Stdout), bufio.NewWriter(os.Stderr)}
 }
 
-func NewIOHandler(stdin io.Reader, stdout io.Writer, stderr io.Writer) *ioHandler {
+func newIOHandler(stdin io.Reader, stdout io.Writer, stderr io.Writer) *ioHandler {
 	return &ioHandler{bufio.NewScanner(stdin), bufio.NewWriter(stdout), bufio.NewWriter(stderr)}
 }
 

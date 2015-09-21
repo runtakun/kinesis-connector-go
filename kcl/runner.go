@@ -4,8 +4,8 @@ import "io"
 
 func RunCLI(rp RecordProcessor) error {
 
-	ih := NewCLIHandler()
-	cp := &CheckPointer{ih, false}
+	ih := newCLIHandler()
+	cp := &CheckPointer{ih, true}
 	mh := &messageHandler{ih, rp, cp}
 
 	return mh.doAction()
@@ -13,8 +13,8 @@ func RunCLI(rp RecordProcessor) error {
 
 func RunFile(rp RecordProcessor, in io.Reader, out io.Writer, err io.Writer) error {
 
-	ih := NewIOHandler(in, out, err)
-	cp := &CheckPointer{ih, false}
+	ih := newIOHandler(in, out, err)
+	cp := &CheckPointer{ih, true}
 	mh := &messageHandler{ih, rp, cp}
 
 	return mh.doAction()

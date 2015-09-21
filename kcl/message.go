@@ -28,10 +28,11 @@ func (mh *messageHandler) doAction() error {
 	case "initialize":
 		err = mh.rp.Initialize(*msg.ShardID)
 	case "processRecords":
-		mh.cp.checkPointAllowed = true
 		err = mh.rp.ProcessRecords(msg.Records, mh.cp)
 	case "shutdown":
-		mh.cp.checkPointAllowed = true
+		if msg.Reason == nil || *msg.Reason == "ZOMBIE" {
+			mh.cp.checkPointAllowed = false
+		}
 		err = mh.rp.Shutdown(*msg.Reason, mh.cp)
 	default:
 		err = fmt.Errorf("invalid action: %s", msg.Action)
