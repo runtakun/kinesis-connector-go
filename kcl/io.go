@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 )
@@ -11,15 +12,14 @@ import (
 type ioHandler struct {
 	In  *bufio.Scanner
 	Out *bufio.Writer
-	Err *bufio.Writer
 }
 
 func newCLIHandler() *ioHandler {
-	return &ioHandler{bufio.NewScanner(os.Stdin), bufio.NewWriter(os.Stdout), bufio.NewWriter(os.Stderr)}
+	return &ioHandler{bufio.NewScanner(os.Stdin), bufio.NewWriter(os.Stdout)}
 }
 
-func newIOHandler(stdin io.Reader, stdout io.Writer, stderr io.Writer) *ioHandler {
-	return &ioHandler{bufio.NewScanner(stdin), bufio.NewWriter(stdout), bufio.NewWriter(stderr)}
+func newIOHandler(stdin io.Reader, stdout io.Writer) *ioHandler {
+	return &ioHandler{bufio.NewScanner(stdin), bufio.NewWriter(stdout)}
 }
 
 type response struct {
@@ -48,6 +48,8 @@ func (ih *ioHandler) receiveMessage() (*message, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Log(fmt.Sprintf("incoming message: %s", buf))
 
 	var msg message
 	if err := json.Unmarshal(buf, &msg); err != nil {

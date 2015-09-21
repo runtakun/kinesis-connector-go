@@ -11,9 +11,9 @@ func RunCLI(rp RecordProcessor) error {
 	return mh.doAction()
 }
 
-func RunFile(rp RecordProcessor, in io.Reader, out io.Writer, err io.Writer) error {
+func RunFile(rp RecordProcessor, in io.Reader, out io.Writer) error {
 
-	ih := newIOHandler(in, out, err)
+	ih := newIOHandler(in, out)
 	cp := &CheckPointer{ih, true}
 	mh := &messageHandler{ih, rp, cp}
 
