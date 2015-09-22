@@ -1,4 +1,4 @@
-package kinesis_connector_go_test
+package kcl_test
 
 import (
 	"fmt"
