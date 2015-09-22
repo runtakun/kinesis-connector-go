@@ -60,7 +60,7 @@ var _ = Describe("Message", func() {
 		})
 
 		It("received processRecords action", func() {
-			stdin.Write([]byte(fmt.Sprintf(`{"action": "processRecords", "data": "data", "partitionKey": "pk1", "sequenceNumber": "001"}`)))
+			stdin.Write([]byte(fmt.Sprintf(`{"action": "processRecords", "records": [{"data": "data", "partitionKey": "pk1", "sequenceNumber": "001"}, {"data": "data", "partitionKey": "pk1", "sequenceNumber": "002"}]}`)))
 			Eventually(stdout).Should(gbytes.Say(`{"action":"status","responseFor":"processRecords"}`))
 		})
 
