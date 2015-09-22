@@ -35,25 +35,43 @@ func (l *ginkgoLogger) Printf(format string, v ...interface{}) {
 }
 
 var _ = Describe("Message", func() {
-
 	BeforeEach(func() {
 		SetLogger(&ginkgoLogger{})
 	})
 
-	Context("receive intialize message", func() {
+	Context("receive normal message", func() {
 
 		var stdout *bytes.Buffer
 		var processor RecordProcessor
 
+		var shardID string
+
 		BeforeEach(func() {
 			stdout = new(bytes.Buffer)
 			processor = &testProcessor{}
+
+			shardID = uuid.NewRandom().String()
 		})
 
-		It("should be initialize processor", func() {
-			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "initialize", "shardId": "%s"}`, uuid.NewRandom().String()))
-			Expect(RunFile(processor, stdin, stdout)).ShouldNot(HaveOccurred())
+		It("received intialize action", func() {
+			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "initialize", "shardId": "%s"}`, shardID))
+			err := RunFile(processor, stdin, stdout)
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "initialize"}`))
+		})
+
+		It("received processRecord action", func() {
+			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "processRecords", "data": "data", "partitionKey": "pk1", "sequenceNumber": "001"}`))
+			err := RunFile(processor, stdin, stdout)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "processRecords"}`))
+		})
+
+		It("received shutdown action", func() {
+			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "shutdown", "reason": "TERMINATE"}`))
+			err := RunFile(processor, stdin, stdout)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "shutdown"}`))
 		})
 	})
 })
