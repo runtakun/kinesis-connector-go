@@ -26,7 +26,7 @@ type Buffer interface {
 }
 
 type Emitter interface {
-	Emit(buffer Buffer) []interface{}
+	Emit(buffer *UnmodifiableBuffer) []interface{}
 	Fail(items []interface{})
 	Shutdown()
 }
