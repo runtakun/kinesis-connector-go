@@ -1,10 +1,13 @@
 package kcl
 
-import "io"
+import (
+	"io"
+	"os"
+)
 
 func RunCLI(rp RecordProcessor) {
 
-	ih := newCLIHandler()
+	ih := newIOHandler(os.Stdin, os.Stdout)
 	cp := &CheckPointer{ih, true}
 	mh := &messageHandler{ih, rp, cp}
 

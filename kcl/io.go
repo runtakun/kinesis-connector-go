@@ -5,16 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"os"
 )
 
 type ioHandler struct {
 	In  *bufio.Scanner
 	Out *bufio.Writer
-}
-
-func newCLIHandler() *ioHandler {
-	return &ioHandler{bufio.NewScanner(os.Stdin), bufio.NewWriter(os.Stdout)}
 }
 
 func newIOHandler(stdin io.Reader, stdout io.Writer) *ioHandler {
