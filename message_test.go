@@ -1,7 +1,6 @@
 package kinesis_connector_go_test
 
 import (
-	"bytes"
 	"fmt"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -10,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 )
 
 type testProcessor struct {
@@ -35,43 +35,39 @@ func (l *ginkgoLogger) Printf(format string, v ...interface{}) {
 }
 
 var _ = Describe("Message", func() {
+
+	var stdin *gbytes.Buffer
+	var stdout *gbytes.Buffer
+	var processor RecordProcessor
+
+	var shardID string
+
 	BeforeEach(func() {
 		SetLogger(&ginkgoLogger{})
+
+		stdin = gbytes.NewBuffer()
+		stdout = gbytes.NewBuffer()
+		processor = &testProcessor{}
+
+		shardID = uuid.NewRandom().String()
+		go RunIO(processor, stdin, stdout)
 	})
 
 	Context("receive normal message", func() {
 
-		var stdout *bytes.Buffer
-		var processor RecordProcessor
-
-		var shardID string
-
-		BeforeEach(func() {
-			stdout = new(bytes.Buffer)
-			processor = &testProcessor{}
-
-			shardID = uuid.NewRandom().String()
-		})
-
 		It("received intialize action", func() {
-			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "initialize", "shardId": "%s"}`, shardID))
-			err := RunFile(processor, stdin, stdout)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "initialize"}`))
+			stdin.Write([]byte(fmt.Sprintf(`{"action": "initialize", "shardId": "%s"}`, shardID)))
+			Eventually(stdout).Should(gbytes.Say(`{"action":"status","responseFor":"initialize"}`))
 		})
 
 		It("received processRecord action", func() {
-			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "processRecords", "data": "data", "partitionKey": "pk1", "sequenceNumber": "001"}`))
-			err := RunFile(processor, stdin, stdout)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "processRecords"}`))
+			stdin.Write([]byte(fmt.Sprintf(`{"action": "processRecords", "data": "data", "partitionKey": "pk1", "sequenceNumber": "001"}`)))
+			Eventually(stdout).Should(gbytes.Say(`{"action":"status","responseFor":"processRecords"}`))
 		})
 
 		It("received shutdown action", func() {
-			stdin := bytes.NewBufferString(fmt.Sprintf(`{"action": "shutdown", "reason": "TERMINATE"}`))
-			err := RunFile(processor, stdin, stdout)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(stdout.Bytes()).Should(MatchJSON(`{"action": "status", "responseFor": "shutdown"}`))
+			stdin.Write([]byte(fmt.Sprintf(`{"action": "shutdown", "reason": "TERMINATE"}`)))
+			Eventually(stdout).Should(gbytes.Say(`{"action":"status","responseFor":"shutdown"}`))
 		})
 	})
 })
