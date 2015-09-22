@@ -36,24 +36,23 @@ func (l *ginkgoLogger) Printf(format string, v ...interface{}) {
 
 var _ = Describe("Message", func() {
 
-	var stdin *gbytes.Buffer
-	var stdout *gbytes.Buffer
-	var processor RecordProcessor
+	Describe("receive normal message", func() {
+		var stdin *gbytes.Buffer
+		var stdout *gbytes.Buffer
+		var processor RecordProcessor
 
-	var shardID string
+		var shardID string
 
-	BeforeEach(func() {
-		SetLogger(&ginkgoLogger{})
+		BeforeEach(func() {
+			SetLogger(&ginkgoLogger{})
 
-		stdin = gbytes.NewBuffer()
-		stdout = gbytes.NewBuffer()
-		processor = &testProcessor{}
+			stdin = gbytes.NewBuffer()
+			stdout = gbytes.NewBuffer()
+			processor = &testProcessor{}
 
-		shardID = uuid.NewRandom().String()
-		go RunIO(processor, stdin, stdout)
-	})
-
-	Context("receive normal message", func() {
+			shardID = uuid.NewRandom().String()
+			go RunIO(processor, stdin, stdout)
+		})
 
 		It("received intialize action", func() {
 			stdin.Write([]byte(fmt.Sprintf(`{"action": "initialize", "shardId": "%s"}`, shardID)))
