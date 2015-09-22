@@ -11,16 +11,12 @@ type BasicMemoryBuffer struct {
 	bytesToBuffer        uint64
 	millisecondsToBuffer int64
 
-	firstSeqNum       string
 	lastSeqNum        string
 	byteCount         uint64
 	previousFlushTime time.Time
 }
 
 func (b *BasicMemoryBuffer) ConsumeRecord(record interface{}, recordSize uint64, seqNum string) {
-	if len(b.buffer) == 0 {
-		b.firstSeqNum = seqNum
-	}
 	b.lastSeqNum = seqNum
 	b.buffer = append(b.buffer, record)
 	atomic.AddUint64(&b.byteCount, recordSize)
